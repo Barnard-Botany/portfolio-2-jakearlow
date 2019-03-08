@@ -1,0 +1,165 @@
+---
+title: "Portfolio 2"
+output: html_notebook
+---
+
+Portfolio 2, Part 2.3 
+By Jake Arlow
+
+```{r}
+library(BIEN)
+library(plyr)
+library(labdsv)
+library(vegan)
+```
+
+I'm getting occurence data from Oregon. The three counties are Benton (where OSU is located), Multnomah (Portland) and Malheur
+
+```{r}
+benton <- BIEN_occurrence_county(country="United States", state="Oregon", county = "Benton")
+benton
+multnomah <- BIEN_occurrence_county(country="United States", state="Oregon", county = "Multnomah")
+multnomah
+malheur <- BIEN_occurrence_county(country="United States", state="Oregon", county = "Malheur")
+malheur
+```
+
+Occurence/abundance data for the counties: 
+
+```{r}
+# occurrence data
+benton_occ = benton[c(1)]
+multnomah_occ = multnomah[c(1)]
+malheur_occ = malheur[c(1)]
+
+# abundance data
+benton_ab = count(benton_occ)
+multnomah_ab = count(multnomah_occ)
+malheur_ab = count(malheur_occ)
+
+# checking data
+benton_occ
+benton_ab
+```
+
+Cleaning up occurence/abundance data: 
+
+```{r}
+
+# renaming data frame
+benton_ab = data.frame("benton", benton_ab)
+multnomah_ab = data.frame("multnomah", multnomah_ab)
+malheur_ab = data.frame("malheur", malheur_ab)
+
+# renaming columns
+names(benton_ab)<-c("ListID", "SpeciesID", "Freq")
+names(multnomah_ab)<-c("ListID", "SpeciesID", "Freq")
+names(malheur_ab)<-c("ListID", "SpeciesID", "Freq")
+
+# printing data frames
+benton_ab
+multnomah_ab
+malheur_ab
+```
+
+
+```{r}
+#binding data frames
+counties = rbind(benton_ab, multnomah_ab, malheur_ab)
+counties
+```
+
+Now we're gonna matrify (such a fun word).
+
+```{r}
+counties_matrix<-matrify(counties)
+counties_matrix
+```
+
+Computing the two different diversity indices.
+
+```{r}
+simpson_index<-diversity(counties_matrix, index = "simpson")
+shannon_index<-diversity(counties_matrix, index = "shannon")
+print("Simpson Index: ", quote = FALSE)
+simpson_index
+print("Shannon Index: ", quote = FALSE)
+shannon_index
+```
+
+The Simpson values for the three counties are very similar. Malheur has a higher Shannon index than Benton and Multnomah counties. The Simpson index is also slightly higher for Malheur county, which means that there is a slightly higher diversity.  
+
+Bray and Jacard indices to look at the difference b/t counties
+
+```{r}
+bray_index = vegdist(counties_matrix, "bray")
+jaccard_index = vegdist(counties_matrix, "jaccard", binary=T)
+print("Bray Index: ", quote = FALSE)
+bray_index
+print("Jaccard Index: ", quote = FALSE)
+jaccard_index
+```
+
+The higher the Bray index, the fewer shared species. Malheur county is more different from Benton county than Multnomah is. 
+
+Looking at diversity from plant lists assembled for portfolio. The Welikia list is from 51st between 8th and 9th because that's near where my Grandma lives, a list from Plant-o-Matic (Corvallis Oregon), and then plants from my article. 
+
+```{r}
+welikia_list = read.csv("welikia.csv")
+app_list = read.csv("plant-o-matic_plants.csv")
+article_list = read.csv("plants_article.csv")
+welikia_species = paste(welikia_list$Scientific.Name)
+app_species = paste(app_list$Scientific.Name)
+article_species = paste(article_list$Scientific.Name)
+
+#print
+welikia_species
+app_species
+article_species
+```
+
+Abundance data:
+
+```{r}
+welikia_ab = count(welikia_species)
+welikia_ab = data.frame("Welikia", welikia_ab)
+names(welikia_ab)<-c("ListID", "SpeciesID", "Freq")
+welikia_ab
+
+app_ab = count(app_species)
+app_ab = data.frame("App", app_ab)
+names(app_ab)<-c("ListID", "SpeciesID", "Freq")
+app_ab
+
+article_ab = count(article_species)
+article_ab = data.frame("Plants_article", article_ab)
+names(article_ab)<-c("ListID", "SpeciesID", "Freq")
+article_ab
+```
+
+Matrifying the csv files:
+
+```{r}
+all_ab = rbind(welikia_ab, app_ab, article_ab)
+all_matrix = matrify(all_ab)
+all_matrix
+```
+
+Diversity/similarity indices:
+
+```{r}
+simpson<-diversity(all_matrix, index = "simpson")
+shannon<-diversity(all_matrix, index = "shannon")
+print("Simpson Index: ", quote = FALSE)
+simpson
+print("Shannon Index: ", quote = FALSE)
+shannon
+jaccard = vegdist(all_matrix, "jaccard")
+print("Jaccard Index: ", quote = FALSE)
+jaccard
+bray = vegdist(all_matrix, "bray")
+print("Bray Index: ", quote = FALSE)
+bray
+```
+
+The three plant lists all have similarly high diversity indices. The Jacard and Bray indices are both "1" which means that there are no shared species between the lists.
