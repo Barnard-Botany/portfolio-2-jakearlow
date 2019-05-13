@@ -1,0 +1,67 @@
+---
+title: "Mastery Assignment Jake Arlow"
+output: html_notebook
+---
+```{r}
+library(BIEN)
+library(plyr)
+library(labdsv)
+library(vegan)
+library(divDyn)
+```
+
+For this mastery assignment I wanted to compare modern plant diversity to Jurassic plant diversity in New Jersey. For the modern data I compiled a list using Plant-O-Matic, and for the Jurassic lists I used both PaleoDB and the article "Paleontology and paleoenvironments of early jurassic age strata in the walter kidde Dinosaur Park (New Jersey, USA)
+
+I am going to compare the diversity indices of modern and Jurassic New Jersey.
+
+
+```{r}
+modern_list = read.csv("modern.csv")
+jurassic_list = read.csv("jurassic.csv")
+modern_species = paste(modern_list$Scientific.Name)
+jurassic_species = paste(jurassic_list$Scientific.Name)
+
+#print
+modern_species
+jurassic_species
+```
+
+I am using BIEN for the modern abundance data, and I found an R package called "divDyn" that is supposed to pull from the PaleoDB, but I am having trouble getting it to work. DivDyn "describes sampling and diversity dynamics of fossil occurrence datasets (e.g. from the Paleobiology Database)" and calculates taxonomic richness. 
+
+```{r}
+modern_ab = count(modern_species)
+modern_ab = data.frame("Modern", modern_ab)
+names(modern_ab)<-c("ListID", "SpeciesID", "Freq")
+modern_ab
+
+jurassic_ab = count(jurassic_species)
+jurassic_ab = data.frame("Jurassic", app_ab)
+names(jurassic_ab)<-c("ListID", "SpeciesID", "Freq")
+jurassic_ab
+```
+
+Matrify
+
+```{r}
+all_ab = rbind(modern_ab, jurassic_ab)
+all_matrix = matrify(all_ab)
+all_matrix
+```
+
+Diversity/similarity indices:
+
+```{r}
+simpson<-diversity(all_matrix, index = "simpson")
+shannon<-diversity(all_matrix, index = "shannon")
+print("Simpson Index: ", quote = FALSE)
+simpson
+print("Shannon Index: ", quote = FALSE)
+shannon
+jaccard = vegdist(all_matrix, "jaccard")
+print("Jaccard Index: ", quote = FALSE)
+jaccard
+bray = vegdist(all_matrix, "bray")
+print("Bray Index: ", quote = FALSE)
+bray
+```
+I'm not sure how well this worked, but it makes sense that the Jurassic plant list has lower diversity for a few reasons. First of all, not every species that occurred in Jurassic New Jersey has been recorded or fossilized. Also, there were no angiosperms yet in the Jurassic, only gymnosperms. 
